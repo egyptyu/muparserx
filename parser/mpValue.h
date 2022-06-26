@@ -94,6 +94,7 @@ MUP_NAMESPACE_START
     virtual int_type GetInteger() const override;
     virtual float_type GetFloat() const override;
     virtual float_type GetImag() const override;
+    virtual float_type GetReal() const;
     virtual bool GetBool() const override;
     virtual const cmplx_type& GetComplex() const override;
     virtual const string_type& GetString() const override;
@@ -117,10 +118,17 @@ MUP_NAMESPACE_START
     operator bool();
 
   private:
-
-    cmplx_type   m_val;    ///< Member variable for storing the value of complex, float, int and boolean values
+    // any time only one 
+    // only c++11 support anonymous union
+    union {
     string_type *m_psVal;  ///< Variable for storing a string value
-    matrix_type *m_pvVal;  ///< A Vector for storing array variable content
+    matrix_type *m_pvVal;  ///< A Vector for storing a¡¤rray variable content
+    float_type   m_fval;     /// float point value
+    int_type     m_ival;       /// integer value
+    bool_type    m_bval;      /// boolean value
+    } data;
+    // only c++11 support struct object in ths union
+    cmplx_type   m_val;    ///< Member variable for storing the value of complex, float, int and boolean values
     char_type    m_cType;  ///< A byte indicating the type os the represented value
     EFlags       m_iFlags; ///< Additional flags
     ValueCache  *m_pCache; ///< Pointer to the Value Cache

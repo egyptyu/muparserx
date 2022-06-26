@@ -239,6 +239,20 @@ MUP_NAMESPACE_START
     }
 
     //-----------------------------------------------------------------------------------------------
+    float_type Variable::GetReal() const
+    {
+        try
+        {
+            return m_pVal->GetReal();
+        }
+        catch (ParserError &exc)
+        {
+            exc.GetContext().Ident = GetIdent();
+            throw;
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------------
     const cmplx_type& Variable::GetComplex() const
     {
         try

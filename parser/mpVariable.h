@@ -78,6 +78,7 @@ MUP_NAMESPACE_START
     virtual int_type GetInteger() const;
     virtual float_type GetFloat() const;
     virtual float_type GetImag() const;
+    virtual float_type GetReal() const;
     virtual bool GetBool() const;
     virtual const cmplx_type& GetComplex() const;
     virtual const string_type& GetString() const;

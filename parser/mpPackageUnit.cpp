@@ -57,7 +57,18 @@ MUP_NAMESPACE_START
       throw ParserError(err);                                      \
     }                                                              \
                                                                    \
-    *ret = a_pArg[0]->GetComplex() * MUL;                          \
+    if (a_pArg[0]->IsInteger())                                    \
+    {                                                              \
+      *ret = a_pArg[0]->GetInteger() * MUL;                        \
+    }                                                              \
+    else if (a_pArg[0]->IsComplex())                               \
+    {                                                              \
+      *ret = a_pArg[0]->GetComplex() * MUL;                        \
+    }                                                              \
+    else                                                           \
+    {                                                              \
+      *ret = a_pArg[0]->GetFloat() * MUL;                          \
+    }                                                              \
   }                                                                \
                                                                    \
   const char_type* CLASS::GetDesc() const                          \

@@ -104,7 +104,7 @@ MUP_NAMESPACE_START
       throw ParserError(err);
     }
 
-    *pVar = cmplx_type(a_pArg[0]->GetFloat() + a_pArg[1]->GetFloat(),
+    *pVar = cmplx_type(a_pArg[0]->GetReal() + a_pArg[1]->GetReal(),
                        a_pArg[0]->GetImag() + a_pArg[1]->GetImag());
     *ret = *pVar;
   }
@@ -144,7 +144,7 @@ MUP_NAMESPACE_START
       throw ParserError(err);
     }
 
-    *pVar = cmplx_type(a_pArg[0]->GetFloat() - a_pArg[1]->GetFloat(),
+    *pVar = cmplx_type(a_pArg[0]->GetReal() - a_pArg[1]->GetReal(),
                        a_pArg[0]->GetImag() - a_pArg[1]->GetImag());
     *ret = *pVar; 
   }
@@ -184,9 +184,9 @@ MUP_NAMESPACE_START
       throw ParserError(err);
     }
 
-    float_type a = a_pArg[0]->GetFloat(),
+    float_type a = a_pArg[0]->GetReal(),
                b = a_pArg[0]->GetImag(),
-               c = a_pArg[1]->GetFloat(),
+               c = a_pArg[1]->GetReal(),
                d = a_pArg[1]->GetImag();
 
     // fix for #107:
@@ -230,9 +230,9 @@ MUP_NAMESPACE_START
       throw ParserError(err);
     }
 
-    float_type a = a_pArg[0]->GetFloat(),
+    float_type a = a_pArg[0]->GetReal(),
                b = a_pArg[0]->GetImag(),
-               c = a_pArg[1]->GetFloat(),
+               c = a_pArg[1]->GetReal(),
                d = a_pArg[1]->GetImag(),
                n = c*c + d*d;
     *pVar = cmplx_type((a*c+b*d)/n, (b*c-a*d)/n); 

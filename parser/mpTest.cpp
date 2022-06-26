@@ -469,8 +469,8 @@ int ParserTester::TestComplex()
 	iNumErr += EqnTest(_T("sqrt((a-b))"), cmplx_type(0, 1), true, 2);
 	iNumErr += EqnTest(_T("sqrt(-(1))"), cmplx_type(0, 1), true, 0);
 	iNumErr += EqnTest(_T("sqrt((-1))"), cmplx_type(0, 1), true, 0);
-	iNumErr += EqnTest(_T("sqrt(-(-1))"), cmplx_type(1, 0), true, 0);
-	iNumErr += EqnTest(_T("sqrt(1)"), cmplx_type(1, 0), true, 0);
+	iNumErr += EqnTest(_T("sqrt(-(-1))"), (float_type)1.0, true, 0);
+	iNumErr += EqnTest(_T("sqrt(1)"), (float_type)1.0, true, 0);
 	iNumErr += EqnTest(_T("a=1+2i"), cmplx_type(1, 2), true, 1);
 	iNumErr += EqnTest(_T("-(1+2i)"), cmplx_type(-1, -2), true, 0);
 	iNumErr += EqnTest(_T("-(-1-2i)"), cmplx_type(1, 2), true, 0);
@@ -559,7 +559,7 @@ int ParserTester::TestParserValue()
 			Value x = 1.0;
 			Value y = cmplx_type(0, 1);
 			x += y;
-			if (x.GetImag() != 1 || x.GetFloat() != 1 || x.GetType() != 'c')
+			if (x.GetImag() != 1 || x.GetReal() != 1 || x.GetType() != 'c')
 			{
 				*m_stream << _T("\nValue::operator+=(...) failed.");
 				iNumErr++;
@@ -568,7 +568,7 @@ int ParserTester::TestParserValue()
 			x = 1.0;
 			y = cmplx_type(0, 1);
 			x -= y;
-			if (x.GetImag() != -1 || x.GetFloat() != 1 || x.GetType() != 'c')
+			if (x.GetImag() != -1 || x.GetReal() != 1 || x.GetType() != 'c')
 			{
 				*m_stream << _T("\nValue::operator-=(...) failed.");
 				iNumErr++;
@@ -599,25 +599,25 @@ int ParserTester::TestParserValue()
 	// when used with an incorrect value type
 	// Case 1:  test float values
 	VALUE_THROWCHECK(fVal, false, GetFloat)
-		VALUE_THROWCHECK(fVal, false, GetImag)
+		VALUE_THROWCHECK(fVal, true, GetImag)
 		VALUE_THROWCHECK(fVal, true, GetBool)
 		VALUE_THROWCHECK(fVal, true, GetString)
 		VALUE_THROWCHECK(fVal, true, GetArray)
 		// for variables
 		VALUE_THROWCHECK(fVar, false, GetFloat)
-		VALUE_THROWCHECK(fVar, false, GetImag)
+		VALUE_THROWCHECK(fVar, true, GetImag)
 		VALUE_THROWCHECK(fVar, true, GetBool)
 		VALUE_THROWCHECK(fVar, true, GetString)
 		VALUE_THROWCHECK(fVar, true, GetArray)
 
 		// Case 2:  test bool values
-		VALUE_THROWCHECK(bVal, false, GetFloat)
+		VALUE_THROWCHECK(bVal, true, GetFloat)
 		VALUE_THROWCHECK(bVal, true, GetImag)
 		VALUE_THROWCHECK(bVal, false, GetBool)
 		VALUE_THROWCHECK(bVal, true, GetString)
 		VALUE_THROWCHECK(bVal, true, GetArray)
 		// for variables
-		VALUE_THROWCHECK(bVar, false, GetFloat)
+		VALUE_THROWCHECK(bVar, true, GetFloat)
 		VALUE_THROWCHECK(bVar, true, GetImag)
 		VALUE_THROWCHECK(bVar, false, GetBool)
 		VALUE_THROWCHECK(bVar, true, GetString)
@@ -1744,7 +1744,7 @@ int ParserTester::EqnTest(const string_type &a_str, Value a_val, bool a_fPass, i
 			int num = sizeof(fVal) / sizeof(Value);
 			for (int i = 0; i < num; ++i)
 			{
-				bStat &= (fabs(a_val.GetFloat() - fVal[i].GetFloat()) <= std::max((float_type)1e-15, fabs(fVal[i].GetFloat() * (float_type)0.0000001)));
+				bStat &= (fabs(a_val.GetReal() - fVal[i].GetReal()) <= std::max((float_type)1e-15, fabs(fVal[i].GetReal() * (float_type)0.0000001)));
 				bStat &= (fabs(a_val.GetImag() - fVal[i].GetImag()) <= std::max((float_type)1e-15, fabs(fVal[i].GetImag()  * (float_type)0.0000001)));
 			}
 		}
@@ -1764,8 +1764,12 @@ int ParserTester::EqnTest(const string_type &a_str, Value a_val, bool a_fPass, i
 
 					bool Check(IValue &v1, IValue &v2)
 					{
-						if (v1.GetType() != v2.GetType())
+						if (v1.GetType() != v2.GetType()) {
+							if (v1.IsNonComplexScalar() && v2.IsNonComplexScalar()) {
+								return (fabs(v1.GetFloat() - v2.GetFloat()) <= std::max((float_type)1e-15, fabs(v1.GetFloat() * (float_type)0.0000001)));
+							}
 							return false;
+						}
 
 						if (v1.GetRows() != v2.GetRows())
 							return false;

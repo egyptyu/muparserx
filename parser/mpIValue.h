@@ -84,6 +84,7 @@ MUP_NAMESPACE_START
     virtual int_type GetInteger() const = 0;
     virtual float_type GetFloat() const = 0;
     virtual float_type GetImag() const = 0;
+    virtual float_type GetReal() const = 0;
     virtual bool GetBool() const = 0;
     virtual const cmplx_type& GetComplex() const = 0;
     virtual const string_type&  GetString() const = 0;
@@ -140,7 +141,8 @@ MUP_NAMESPACE_START
     {
       // checking the type is is insufficient. The integer could be disguised
       // as a float or a complex value
-      return IsScalar() && GetImag()==0 && GetFloat()==(int_type)GetFloat();
+      // return IsScalar() && GetImag()==0 && GetFloat()==(int_type)GetFloat();
+      return GetType() == 'i';
     }
 
     //---------------------------------------------------------------------------
@@ -158,7 +160,8 @@ MUP_NAMESPACE_START
     */
     inline bool IsComplex() const
     {
-      return GetType() == 'c' && GetImag()!=0;
+      // return GetType() == 'c' && GetImag()!=0;
+      return GetType() == 'c';
     }
 
     //---------------------------------------------------------------------------

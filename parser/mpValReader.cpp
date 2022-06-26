@@ -55,6 +55,9 @@ DblValReader::~DblValReader()
 //------------------------------------------------------------------------------
 bool DblValReader::IsValue(const char_type *a_szExpr, int &a_iPos, Value &a_Val)
 {
+    // here We should identify the difference between 1 and 1.0
+    // The former should be an integer, while the latter is a float
+    bool_type bIsInt = true;
     stringstream_type stream(a_szExpr + a_iPos);
     float_type fVal(0);
     std::streamoff iEnd(0);
@@ -69,13 +72,26 @@ bool DblValReader::IsValue(const char_type *a_szExpr, int &a_iPos, Value &a_Val)
         // This part sucks but tellg will return -1 if eof is set,
         // so i need a special treatment for the case that the number
         // just read here is the last part of the string
-        for (; a_szExpr[a_iPos] != 0; ++a_iPos);
+        for (; a_szExpr[a_iPos] != 0; ++a_iPos)
+        {
+            if (a_szExpr[a_iPos] == '.')
+            {
+                bIsInt = false;
+            }
+        }
     }
     else
     {
         iEnd = stream.tellg();   // Position after reading
         assert(iEnd > 0);
-        a_iPos += (int)iEnd;
+        for (int i = 0; i < (int)iEnd; ++i)
+        {
+            if (a_szExpr[a_iPos++] == '.')
+            {
+                bIsInt = false;
+            }
+        }
+       //  a_iPos += (int)iEnd;
     }
 
     // Finally i have to check if the next sign is the "i" for a imaginary unit
@@ -87,7 +103,14 @@ bool DblValReader::IsValue(const char_type *a_szExpr, int &a_iPos, Value &a_Val)
     }
     else
     {
-        a_Val = cmplx_type(fVal, 0.0);
+        if (bIsInt)
+        {
+            a_Val = int_type(fVal);
+        }
+        else
+        {
+            a_Val = fVal;
+        }
     }
 
     return true;

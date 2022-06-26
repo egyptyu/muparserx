@@ -51,7 +51,7 @@ MUP_NAMESPACE_START
   { 
       MUP_VERIFY(a_iArgc == 1);
 
-    if (a_pArg[0]->IsScalar())
+    if (a_pArg[0]->IsNonComplexScalar())
     {
       *ret = -a_pArg[0]->GetFloat();
     }
@@ -63,6 +63,10 @@ MUP_NAMESPACE_START
         v.At(i) = -a_pArg[0]->At(i).GetFloat();
       }
       *ret = v;
+    }
+    else if (a_pArg[0]->GetType() =='c')
+    {
+      *ret = -a_pArg[0]->GetReal();
     }
     else
     {
@@ -101,7 +105,7 @@ MUP_NAMESPACE_START
   { 
       MUP_VERIFY(a_iArgc == 1);
 
-    if (a_pArg[0]->IsScalar())
+    if (a_pArg[0]->IsNonComplexScalar())
     {
       *ret = a_pArg[0]->GetFloat();
     }
@@ -113,6 +117,10 @@ MUP_NAMESPACE_START
         v.At(i) = a_pArg[0]->At(i).GetFloat();
       }
       *ret = v;
+    }
+    else if (a_pArg[0]->GetType()=='c')
+    {
+      *ret = a_pArg[0]->GetReal();
     }
     else
     {
@@ -230,8 +238,8 @@ MUP_NAMESPACE_START
         if (!a2.At(i).IsNonComplexScalar())
           throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a2.At(i).GetType(), 'f', 1)); 
 
-        rv.At(i) = cmplx_type(a1.At(i).GetFloat() - a2.At(i).GetFloat(),
-                              a1.At(i).GetImag()  - a2.At(i).GetImag());
+
+        rv.At(i) = a1.At(i).GetFloat() - a2.At(i).GetFloat();
       }
 
       *ret = rv;

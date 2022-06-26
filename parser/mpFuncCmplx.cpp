@@ -68,8 +68,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxReal::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    float_type v = a_pArg[0]->GetFloat();
-    *ret = v;
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      float_type v = a_pArg[0]->GetReal();
+      *ret = v;
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = a_pArg[0]->GetInteger();
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = a_pArg[0]->GetFloat();
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -97,8 +112,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxImag::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    float_type v = a_pArg[0]->GetImag();
-    *ret = v;
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      float_type v = a_pArg[0]->GetImag();
+      *ret = v;
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = (int_type)0;
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = (int_type)0;
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -126,7 +156,22 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxConj::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    *ret = cmplx_type(a_pArg[0]->GetFloat(), -a_pArg[0]->GetImag());
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      *ret = cmplx_type(a_pArg[0]->GetReal(), -a_pArg[0]->GetImag());
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = cmplx_type(a_pArg[0]->GetInteger(), -0);
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = cmplx_type(a_pArg[0]->GetFloat(), -0);
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -154,8 +199,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxArg::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = std::arg(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = std::arg(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = std::arg(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = std::arg(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -183,8 +243,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxNorm::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = std::norm(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = std::norm(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = std::norm(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = std::norm(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -222,7 +297,7 @@ MUP_NAMESPACE_START
     }
     else
     {
-      cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
       *ret = std::cos(v);
     }
   }
@@ -258,7 +333,7 @@ MUP_NAMESPACE_START
     }
     else
     {
-      cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
       *ret = std::sin(v);
     }
   }
@@ -288,8 +363,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxCosH::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = cosh(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = cosh(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = cosh(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = cosh(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -317,8 +407,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxSinH::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = sinh(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = sinh(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = sinh(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = sinh(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -352,7 +457,7 @@ MUP_NAMESPACE_START
     }
     else
     {
-      cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
       *ret = std::tan(v);
     }
   }
@@ -382,8 +487,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxTanH::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = tanh(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = tanh(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = tanh(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = tanh(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -411,7 +531,36 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxSqrt::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    *ret = sqrt((*a_pArg[0]).GetComplex());
+
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      *ret = sqrt((*a_pArg[0]).GetComplex());
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = sqrt(cmplx_type(a_pArg[0]->GetInteger(),0));
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = sqrt(cmplx_type(a_pArg[0]->GetFloat(), 0));
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1));
+    }
+    
+    if (ret->GetType() == 'c' && ret->GetImag() == 0)
+	{
+
+      if (ret->GetReal() == (int_type)ret->GetReal())
+      {
+          *ret = (int_type)ret->GetReal();
+      }
+      else
+      {
+          *ret = (float_type)ret->GetReal();
+      }
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -440,8 +589,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxExp::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = exp(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = exp(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = exp(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = exp(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -469,8 +633,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxLn::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = log(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = log(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = log(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = log(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -498,8 +677,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxLog::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = log(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = log(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = log(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = log(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
 
@@ -528,8 +722,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxLog10::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    cmplx_type v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = log10(v);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      cmplx_type v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = log10(v);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = log10(a_pArg[0]->GetInteger());
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = log10(a_pArg[0]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -557,8 +766,23 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxLog2::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    std::complex<float_type> v(a_pArg[0]->GetFloat(), a_pArg[0]->GetImag());
-    *ret = std::log(v) * (float_type)1.0/std::log((float_type)2.0);
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      std::complex<float_type> v(a_pArg[0]->GetReal(), a_pArg[0]->GetImag());
+      *ret = std::log(v) * (float_type)1.0/std::log((float_type)2.0);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      *ret = std::log(a_pArg[0]->GetInteger()) * (float_type)1.0/std::log((float_type)2.0);
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      *ret = std::log(a_pArg[0]->GetFloat()) * (float_type)1.0/std::log((float_type)2.0);
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -586,9 +810,26 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxAbs::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    float_type v = sqrt(a_pArg[0]->GetFloat()*a_pArg[0]->GetFloat() + 
-                        a_pArg[0]->GetImag()*a_pArg[0]->GetImag());
-    *ret = v;
+    if (a_pArg[0]->GetType() == 'c')
+    {
+      float_type v = sqrt(a_pArg[0]->GetReal()*a_pArg[0]->GetReal() + 
+                          a_pArg[0]->GetImag()*a_pArg[0]->GetImag());
+      *ret = v;
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+      float_type v = sqrt(a_pArg[0]->GetInteger()*a_pArg[0]->GetInteger() + 0);
+      *ret = v;
+    }
+    else if (a_pArg[0]->GetType() == 'f')
+    {
+      float_type v = sqrt(a_pArg[0]->GetFloat()*a_pArg[0]->GetFloat() + 0);
+      *ret = v;
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------
@@ -616,7 +857,26 @@ MUP_NAMESPACE_START
   //-----------------------------------------------------------------------
   void FunCmplxPow::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int)
   {
-    *ret = std::pow(a_pArg[0]->GetComplex(), a_pArg[1]->GetComplex());
+    if (a_pArg[0]->GetType() == 'c' && a_pArg[1]->GetType() == 'c')
+    {
+      *ret = std::pow(a_pArg[0]->GetComplex(), a_pArg[1]->GetComplex());
+    }
+    else if (a_pArg[0]->GetType() == 'c')
+    {
+      *ret = std::pow(a_pArg[0]->GetComplex(), a_pArg[1]->GetFloat());
+    }
+    else if (a_pArg[1]->GetType() == 'c')
+    {
+      *ret = std::pow(a_pArg[0]->GetFloat(), a_pArg[1]->GetComplex());
+    }
+    else if (a_pArg[0]->IsNonComplexScalar() && a_pArg[0]->IsNonComplexScalar())
+    {
+      *ret = std::pow(a_pArg[0]->GetFloat(), a_pArg[1]->GetFloat());
+    }
+    else
+    {
+      throw ParserError( ErrorContext(ecTYPE_CONFLICT_FUN, -1, GetIdent(), a_pArg[0]->GetType(), 'c', 1)); 
+    }
   }
 
   //-----------------------------------------------------------------------

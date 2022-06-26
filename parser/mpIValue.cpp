@@ -158,7 +158,7 @@ string_type IValue::ToString() const
 
     case 'c':
     {
-        float_type re = GetFloat(),
+        float_type re = GetReal(),
             im = GetImag();
 
         // realteil nicht ausgeben, wenn es eine rein imaginäre Zahl ist
@@ -178,7 +178,7 @@ string_type IValue::ToString() const
     }
     break;
 
-    case 'i':
+    case 'i':  ss << std::setprecision(std::numeric_limits<float_type>::digits10) << GetInteger(); break;
     case 'f':  ss << std::setprecision(std::numeric_limits<float_type>::digits10) << GetFloat(); break;
     case 's':  ss << _T("\"") << GetString() << _T("\""); break;
     case 'b':  ss << ((GetBool() == true) ? _T("true") : _T("false")); break;
@@ -192,46 +192,7 @@ string_type IValue::ToString() const
 //---------------------------------------------------------------------------
 bool IValue::operator==(const IValue &a_Val) const
 {
-    char_type type1 = GetType(),
-        type2 = a_Val.GetType();
-
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
-    {
-        switch (GetType())
-        {
-        case 'i':
-        case 'f': return GetFloat() == a_Val.GetFloat();
-        case 'c': return GetComplex() == a_Val.GetComplex();
-        case 's': return GetString() == a_Val.GetString();
-        case 'b': return GetBool() == a_Val.GetBool();
-        case 'v': return false;
-        case 'm': if (GetRows() != a_Val.GetRows() || GetCols() != a_Val.GetCols())
-        {
-            return false;
-        }
-                  else
-                  {
-                      for (int i = 0; i < GetRows(); ++i)
-                      {
-                          if (const_cast<IValue*>(this)->At(i) != const_cast<IValue&>(a_Val).At(i))
-                              return false;
-                      }
-
-                      return true;
-                  }
-        default:
-            ErrorContext err;
-            err.Errc = ecINTERNAL_ERROR;
-            err.Pos = -1;
-            err.Type1 = GetType();
-            err.Type2 = a_Val.GetType();
-            throw ParserError(err);
-        } // switch this type
-    }
-    else
-    {
-        return false;
-    }
+    return !(*this != a_Val);
 }
 
 //---------------------------------------------------------------------------
@@ -240,14 +201,14 @@ bool IValue::operator!=(const IValue &a_Val) const
     char_type type1 = GetType(),
         type2 = a_Val.GetType();
 
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
+    if (type1 == type2)
     {
         switch (GetType())
         {
         case 's': return GetString() != a_Val.GetString();
-        case 'i':
+        case 'i': return GetInteger() != a_Val.GetInteger();
         case 'f': return GetFloat() != a_Val.GetFloat();
-        case 'c': return (GetFloat() != a_Val.GetFloat()) || (GetImag() != a_Val.GetImag());
+        case 'c': return (GetReal() != a_Val.GetReal()) || (GetImag() != a_Val.GetImag());
         case 'b': return GetBool() != a_Val.GetBool();
         case 'v': return true;
         case 'm': if (GetRows() != a_Val.GetRows() || GetCols() != a_Val.GetCols())
@@ -273,6 +234,44 @@ bool IValue::operator!=(const IValue &a_Val) const
             throw ParserError(err);
         } // switch this type
     }
+    else if ((IsScalar() && a_Val.IsScalar()))
+    {
+        if (type1 == 'i')
+        {
+            if (type2 == 'f')
+            {
+                return GetInteger() != a_Val.GetFloat();
+            }
+            else
+            {
+                return GetInteger() != a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'f')
+        {
+            if (type2 == 'i')
+            {
+                return GetFloat() != a_Val.GetFloat();
+            }
+            else
+            {
+                return GetFloat() != a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'c')
+        {
+            return GetReal() != a_Val.GetFloat();
+        }
+        else
+        {
+            ErrorContext err;
+            err.Errc = ecTYPE_CONFLICT_FUN;
+            err.Arg = (type1 != 'f' && type1 != 'i') ? 1 : 2;
+            err.Type1 = type2;
+            err.Type2 = type1;
+            throw ParserError(err); 
+        }
+    }
     else
     {
         return true;
@@ -282,73 +281,13 @@ bool IValue::operator!=(const IValue &a_Val) const
 //---------------------------------------------------------------------------
 bool IValue::operator<(const IValue &a_Val) const
 {
-    char_type type1 = GetType();
-    char_type type2 = a_Val.GetType();
-
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
-    {
-        switch (GetType())
-        {
-        case 's': return GetString() < a_Val.GetString();
-        case 'i':
-        case 'f':
-        case 'c': return GetFloat() < a_Val.GetFloat();
-        case 'b': return GetBool() < a_Val.GetBool();
-
-        default:
-            ErrorContext err;
-            err.Errc = ecINTERNAL_ERROR;
-            err.Pos = -1;
-            err.Type1 = GetType();
-            err.Type2 = a_Val.GetType();
-            throw ParserError(err);
-        } // switch this type
-    }
-    else
-    {
-        ErrorContext err;
-        err.Errc = ecTYPE_CONFLICT_FUN;
-        err.Arg = (type1 != 'f' && type1 != 'i') ? 1 : 2;
-        err.Type1 = type2;
-        err.Type2 = type1;
-        throw ParserError(err);
-    }
+   return !(*this >= a_Val);
 }
 
 //---------------------------------------------------------------------------
 bool IValue::operator> (const IValue &a_Val) const
 {
-    char_type type1 = GetType(),
-        type2 = a_Val.GetType();
-
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
-    {
-        switch (GetType())
-        {
-        case 's': return GetString() > a_Val.GetString();
-        case 'i':
-        case 'f':
-        case 'c': return GetFloat() > a_Val.GetFloat();
-        case 'b': return GetBool() > a_Val.GetBool();
-        default:
-            ErrorContext err;
-            err.Errc = ecINTERNAL_ERROR;
-            err.Pos = -1;
-            err.Type1 = GetType();
-            err.Type2 = a_Val.GetType();
-            throw ParserError(err);
-
-        } // switch this type
-    }
-    else
-    {
-        ErrorContext err;
-        err.Errc = ecTYPE_CONFLICT_FUN;
-        err.Arg = (type1 != 'f' && type1 != 'i') ? 1 : 2;
-        err.Type1 = type2;
-        err.Type2 = type1;
-        throw ParserError(err);
-    }
+   return !(*this <= a_Val);
 }
 
 //---------------------------------------------------------------------------
@@ -357,14 +296,14 @@ bool IValue::operator>=(const IValue &a_Val) const
     char_type type1 = GetType(),
         type2 = a_Val.GetType();
 
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
+    if (type1 == type2)
     {
         switch (GetType())
         {
         case 's': return GetString() >= a_Val.GetString();
-        case 'i':
-        case 'f':
-        case 'c': return GetFloat() >= a_Val.GetFloat();
+        case 'i': return GetInteger() >= a_Val.GetInteger();
+        case 'f': return GetFloat() >= a_Val.GetFloat();
+        case 'c': return GetReal() >= a_Val.GetReal();
         case 'b': return GetBool() >= a_Val.GetBool();
         default:
             ErrorContext err;
@@ -375,6 +314,44 @@ bool IValue::operator>=(const IValue &a_Val) const
             throw ParserError(err);
 
         } // switch this type
+    }
+    else if ((IsScalar() && a_Val.IsScalar())) 
+    {
+        if (type1 == 'i')
+        {
+            if (type2 == 'f')
+            {
+                return GetInteger() >= a_Val.GetFloat();
+            }
+            else
+            {
+                return GetInteger() >= a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'f')
+        {
+            if (type2 == 'i')
+            {
+                return GetFloat() >= a_Val.GetFloat();
+            }
+            else
+            {
+                return GetFloat() >= a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'c')
+        {
+            return GetReal() >= a_Val.GetFloat();
+        }
+        else
+        {
+            ErrorContext err;
+            err.Errc = ecTYPE_CONFLICT_FUN;
+            err.Arg = (type1 != 'f' && type1 != 'i') ? 1 : 2;
+            err.Type1 = type2;
+            err.Type2 = type1;
+            throw ParserError(err); 
+        }
     }
     else
     {
@@ -393,14 +370,14 @@ bool IValue::operator<=(const IValue &a_Val) const
     char_type type1 = GetType(),
         type2 = a_Val.GetType();
 
-    if (type1 == type2 || (IsScalar() && a_Val.IsScalar()))
+    if (type1 == type2)
     {
         switch (GetType())
         {
         case 's': return GetString() <= a_Val.GetString();
-        case 'i':
-        case 'f':
-        case 'c': return GetFloat() <= a_Val.GetFloat();
+        case 'i': return GetInteger() <= a_Val.GetInteger();
+        case 'f': return GetFloat() <= a_Val.GetFloat();
+        case 'c': return GetReal() <= a_Val.GetReal();
         case 'b': return GetBool() <= a_Val.GetBool();
         default:
             ErrorContext err;
@@ -411,6 +388,44 @@ bool IValue::operator<=(const IValue &a_Val) const
             throw ParserError(err);
 
         } // switch this type
+    }
+    else if ((IsScalar() && a_Val.IsScalar())) 
+    {
+        if (type1 == 'i')
+        {
+            if (type2 == 'f')
+            {
+                return GetInteger() <= a_Val.GetFloat();
+            }
+            else
+            {
+                return GetInteger() <= a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'f')
+        {
+            if (type2 == 'i')
+            {
+                return GetFloat() <= a_Val.GetFloat();
+            }
+            else
+            {
+                return GetFloat() <= a_Val.GetReal();
+            }
+        }
+        else if (type1 == 'c')
+        {
+            return GetReal() <= a_Val.GetFloat();
+        }
+        else
+        {
+            ErrorContext err;
+            err.Errc = ecTYPE_CONFLICT_FUN;
+            err.Arg = (type1 != 'f' && type1 != 'i') ? 1 : 2;
+            err.Type1 = type2;
+            err.Type2 = type1;
+            throw ParserError(err); 
+        }
     }
     else
     {
@@ -431,9 +446,9 @@ IValue& IValue::operator=(const IValue &ref)
 
     switch (ref.GetType())
     {
-    case 'i':
-    case 'f':
-    case 'c': return *this = cmplx_type(ref.GetFloat(), ref.GetImag());
+    case 'i': return *this = ref.GetInteger();
+    case 'f': return *this = ref.GetFloat();
+    case 'c': return *this = cmplx_type(ref.GetReal(), ref.GetImag());
     case 's': return *this = ref.GetString();
     case 'm': return *this = ref.GetArray();
     case 'b': return *this = ref.GetBool();

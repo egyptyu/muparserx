@@ -52,10 +52,19 @@ OprtSignCmplx::OprtSignCmplx()
 void OprtSignCmplx::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int a_iArgc)
 {
     MUP_VERIFY(a_iArgc == 1);
-
-    if (a_pArg[0]->IsScalar())
+    if (a_pArg[0]->GetType() == 'f')
     {
-        float_type re = a_pArg[0]->GetFloat();
+        float_type fval = a_pArg[0]->GetFloat();
+        *ret = ((fval == 0) ? 0 : -fval);
+    }
+    else if (a_pArg[0]->GetType() == 'i')
+    {
+        int_type ival = a_pArg[0]->GetInteger();
+        *ret = (int_type)(((ival == 0) ? 0 : -ival));
+    }
+    else if (a_pArg[0]->GetType() == 'c')
+    {
+        float_type re = a_pArg[0]->GetReal();
         float_type im = a_pArg[0]->GetImag();
 
         // Do not omit the test for zero! Multiplying 0 with -1 
@@ -72,7 +81,18 @@ void OprtSignCmplx::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int a_iA
         Value v(a_pArg[0]->GetRows(), 0);
         for (int i = 0; i < a_pArg[0]->GetRows(); ++i)
         {
-            v.At(i) = a_pArg[0]->At(i).GetComplex() * (float_type)-1.0;
+            if (a_pArg[0]->At(i).GetType() == 'i') 
+            {
+                v.At(i) = a_pArg[0]->At(i).GetInteger() * (float_type)-1.0;
+            }
+            else if (a_pArg[0]->At(i).GetType() == 'f')
+            {
+                v.At(i) = a_pArg[0]->At(i).GetFloat() * (float_type)-1.0;
+            }
+            else
+            {
+                v.At(i) = a_pArg[0]->At(i).GetComplex() * (float_type)-1.0;
+            }
         }
         *ret = v;
     }
@@ -125,6 +145,12 @@ void OprtAddCmplx::Eval(ptr_val_type& ret, const ptr_val_type *a_pArg, int num)
         // Matrix + Matrix
         *ret = arg1->GetArray() + arg2->GetArray();
     }
+    else if (arg1->IsComplex() && arg2->IsComplex())
+    {
+        // Cmplex + Cmplex
+        *ret = cmplx_type(arg1->GetReal() + arg2->GetReal(),
+            arg1->GetImag() + arg2->GetImag());
+    }
     else
     {
         if (!arg1->IsScalar())
@@ -133,8 +159,13 @@ void OprtAddCmplx::Eval(ptr_val_type& ret, const ptr_val_type *a_pArg, int num)
         if (!arg2->IsScalar())
             throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), arg2->GetType(), 'c', 2));
 
-        *ret = cmplx_type(arg1->GetFloat() + arg2->GetFloat(),
-            arg1->GetImag() + arg2->GetImag());
+        if (arg1->IsComplex()) {
+            *ret = cmplx_type(arg1->GetReal() + arg2->GetFloat(),
+                arg1->GetImag() + 0);
+        } else {
+            *ret = cmplx_type(arg1->GetFloat() + arg2->GetReal(),
+                0 + arg2->GetImag());
+        }
     }
 }
 
@@ -167,14 +198,30 @@ void OprtSubCmplx::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
 
     const IValue *arg1 = a_pArg[0].Get();
     const IValue *arg2 = a_pArg[1].Get();
-    if (a_pArg[0]->IsNonComplexScalar() && a_pArg[1]->IsNonComplexScalar())
+    if (a_pArg[0]->GetType() == 'i' && a_pArg[1]->GetType() == 'i')
     {
-        *ret = arg1->GetFloat() - arg2->GetFloat();
+        *ret = a_pArg[0]->GetInteger() - a_pArg[1]->GetInteger();
+    }
+    else if (a_pArg[0]->GetType() == 'i' && a_pArg[1]->GetType() == 'f') 
+    {
+        *ret = (float_type)a_pArg[0]->GetInteger() - a_pArg[1]->GetFloat();
+    }
+    else if (a_pArg[0]->GetType() == 'f' && a_pArg[1]->GetType() == 'f') 
+    {
+        *ret = a_pArg[0]->GetFloat() - a_pArg[1]->GetFloat();
+    }
+    else if (a_pArg[0]->GetType() == 'f' && a_pArg[1]->GetType() == 'i') 
+    {
+        *ret = a_pArg[0]->GetFloat() - (float_type)a_pArg[1]->GetInteger();
     }
     else if (a_pArg[0]->GetType() == 'm' && a_pArg[1]->GetType() == 'm')
     {
         // Matrix + Matrix
-        *ret = arg1->GetArray() - arg2->GetArray();
+        *ret = a_pArg[0]->GetArray() - a_pArg[1]->GetArray();
+    }
+    else if (a_pArg[0]->GetType() == 'c' && a_pArg[1]->GetType() == 'c') {
+        *ret = cmplx_type(a_pArg[0]->GetReal() - a_pArg[1]->GetReal(),
+                a_pArg[0]->GetImag() - a_pArg[1]->GetImag());
     }
     else
     {
@@ -184,8 +231,13 @@ void OprtSubCmplx::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
         if (!a_pArg[1]->IsScalar())
             throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), a_pArg[1]->GetType(), 'c', 2));
 
-        *ret = cmplx_type(a_pArg[0]->GetFloat() - a_pArg[1]->GetFloat(),
-            a_pArg[0]->GetImag() - a_pArg[1]->GetImag());
+        if (a_pArg[0]->IsComplex()) {
+            *ret = cmplx_type(a_pArg[0]->GetReal() - a_pArg[1]->GetFloat(),
+                a_pArg[0]->GetImag() - 0);
+        } else {
+            *ret = cmplx_type(a_pArg[0]->GetFloat() - a_pArg[1]->GetReal(),
+                0 - a_pArg[1]->GetImag());
+        }
     }
 }
 
@@ -257,12 +309,30 @@ void OprtDivCmplx::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int num)
     {
         *ret = a_pArg[0]->GetFloat() / a_pArg[1]->GetFloat();
     }
+    else if (a_pArg[0]->IsNonComplexScalar())
+    {
+        float_type a = a_pArg[0]->GetFloat(),
+            b = 0,
+            c = a_pArg[1]->GetReal(),
+            d = a_pArg[1]->GetImag(),
+            n = c*c + d*d;
+        *ret = cmplx_type((a*c + b*d) / n, (b*c - a*d) / n);
+    }
+    else if (a_pArg[1]->IsNonComplexScalar())
+    {
+        float_type a = a_pArg[0]->GetReal(),
+            b = a_pArg[0]->GetImag(),
+            c = a_pArg[1]->GetFloat(),
+            d = 0,
+            n = c*c + d*d;
+        *ret = cmplx_type((a*c + b*d) / n, (b*c - a*d) / n);
+    }
     else
     {
         // multiplication of two imaginary numbers      
-        float_type a = a_pArg[0]->GetFloat(),
+        float_type a = a_pArg[0]->GetReal(),
             b = a_pArg[0]->GetImag(),
-            c = a_pArg[1]->GetFloat(),
+            c = a_pArg[1]->GetReal(),
             d = a_pArg[1]->GetImag(),
             n = c*c + d*d;
         *ret = cmplx_type((a*c + b*d) / n, (b*c - a*d) / n);
@@ -295,14 +365,40 @@ OprtPowCmplx::OprtPowCmplx()
 void OprtPowCmplx::Eval(ptr_val_type& ret, const ptr_val_type *arg, int argc)
 {
     assert(argc == 2);
+    if (!arg[0]->IsScalar())
+            throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), arg[0]->GetType(), 'c', 1));
 
-    if (arg[0]->IsComplex() || arg[1]->IsComplex() || (arg[0]->GetFloat() < 0 && !arg[1]->IsInteger()))
+    if (!arg[1]->IsScalar())
+        throw ParserError(ErrorContext(ecTYPE_CONFLICT_FUN, GetExprPos(), GetIdent(), arg[1]->GetType(), 'c', 2));
+
+    if (arg[0]->GetType() == 'c')
     {
-        *ret = std::pow(arg[0]->GetComplex(), arg[1]->GetComplex());;
+        if (arg[1]->GetType() == 'c') {
+            *ret = std::pow(arg[0]->GetComplex(), arg[1]->GetComplex());
+        }
+        else {
+            *ret = std::pow(arg[0]->GetComplex(), cmplx_type(arg[1]->GetFloat(),0));
+        }
+    }
+    else if (arg[1]->GetType() == 'c')
+    {
+        *ret = std::pow(cmplx_type(arg[0]->GetFloat(), 0), arg[1]->GetComplex());
+    }
+    else if (arg[0]->GetFloat() < 0 && !arg[1]->IsInteger() && (arg[1]->GetFloat() != (int_type)arg[1]->GetFloat()))
+    {
+        *ret = std::pow(cmplx_type(arg[0]->GetFloat(), 0), cmplx_type(arg[1]->GetFloat(), 0));
     }
     else
     {
-        *ret = std::pow(arg[0]->GetFloat(), arg[1]->GetFloat());
+        float_type fval = std::pow(arg[0]->GetFloat(), arg[1]->GetFloat());
+        if (fval == (int_type)fval)
+        {
+            *ret = (int_type)fval;
+        }
+        else
+        {
+            *ret = fval;
+        }
     }
 }
 

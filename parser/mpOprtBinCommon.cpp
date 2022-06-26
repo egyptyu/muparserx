@@ -511,9 +511,13 @@ void OprtCastToFloat::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int /*
     switch (a_pArg[0]->GetType())
     {
     case 'i':
+        *ret = float_type(a_pArg[0]->GetInteger());
+        break;
     case 'f':
-    case 'b':
         *ret = a_pArg[0]->GetFloat();
+        break;
+    case 'b':
+        *ret = float_type(a_pArg[0]->GetBool());
         break;
 
     default:
@@ -554,10 +558,14 @@ void OprtCastToInt::Eval(ptr_val_type &ret, const ptr_val_type *a_pArg, int /*a_
 {
     switch (a_pArg[0]->GetType())
     {
-    case 'f':
     case 'i':
+        *ret = a_pArg[0]->GetInteger();
+        break;
+    case 'f':
+        *ret = int_type(a_pArg[0]->GetFloat());
+        break;
     case 'b':
-        *ret = (float_type)((int_type)a_pArg[0]->GetFloat());
+        *ret = int_type(a_pArg[0]->GetBool());
         break;
 
     default:
