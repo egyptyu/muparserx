@@ -43,6 +43,7 @@
 #include <memory>
 
 #include "mpIOprt.h"
+#include "mpIOprtBinShortcut.h"
 #include "mpIValReader.h"
 #include "mpIPackage.h"
 #include "mpStack.h"
@@ -95,6 +96,7 @@ MUP_NAMESPACE_START
     void DefineVar(const string_type &ident, const Variable &var);
     void DefineFun(const ptr_cal_type &fun);
     void DefineOprt(const TokenPtr<IOprtBin> &oprt);
+    void DefineOprt(const TokenPtr<IOprtBinShortcut> &oprt);
     void DefinePostfixOprt(const TokenPtr<IOprtPostfix> &oprt);
     void DefineInfixOprt(const TokenPtr<IOprtInfix> &oprt);
 
@@ -153,6 +155,7 @@ MUP_NAMESPACE_START
     oprt_pfx_maptype m_PostOprtDef;  ///< Postfix operator callbacks
     oprt_ifx_maptype m_InfixOprtDef; ///< Infix operator callbacks.
     oprt_bin_maptype m_OprtDef;      ///< Binary operator callbacks
+    oprt_bin_shortcut_maptype   m_OprtShortcutDef;        ///< short circuit operator definitions
     val_maptype  m_valDef;           ///< Definition of parser constants
     var_maptype  m_varDef;           ///< user defind variables.
 
@@ -171,6 +174,7 @@ MUP_NAMESPACE_START
     void InitTokenReader();
 
     void ApplyFunc(Stack<ptr_tok_type> &a_stOpt, int a_iArgCount) const;
+    void ApplyOprtShortcut(Stack<ptr_tok_type> &a_stOpt) const;
     void ApplyIfElse(Stack<ptr_tok_type> &a_stOpt) const;
     void ApplyRemainingOprt(Stack<ptr_tok_type> &a_stOpt) const;
     const IValue& ParseFromString() const; 

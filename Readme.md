@@ -5,17 +5,23 @@
 [![Packaging status](https://repology.org/badge/tiny-repos/muparserx.svg)](https://repology.org/project/muparserx/versions)
 <!-- [![License](https://img.shields.io/github/license/beltoforion/muparserx.svg?maxAge=360000)](https://github.com/beltoforion/muparserx/blob/master/License.md) -->
 
-muparserx 4.0.9
+muparserx 4.0.11
 ===========================
 
 The evaluation of a mathematical expression is a standard task required in many applications. It can be solved by either using a standard math expression parser such as muparser or by embedding a scripting language such as Lua. There are however some limitations: Although muparser is pretty fast it will only work with scalar values and although Lua is very flexible it does neither support binary operators for arrays nor complex numbers. So if you need a math expression parser with support for arrays, matrices and strings muparserx may be able to help you.
 
 For details please consult the [muparserx documentation](https://beltoforion.de/en/muparserx)
 
-V4.0.10 (20211106)
+V4.0.11 (20211123)
+-----------------
+Bugfixes:
+  - Issue 112:  Compilation issue due to an invalid header file name
+ 
+V4.0.10 (20211122)
 -----------------
 Bugfixes:
   - Issue 107:  Complex multiplication-assignment did not work correctly
+  - Issue 110:  Short evaluation for binary operators added (thanks to user egyptyu)
   
 V4.0.9 (20200619)
 -----------------

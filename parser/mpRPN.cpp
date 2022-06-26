@@ -35,6 +35,7 @@
 #include "mpRPN.h"
 #include "mpIToken.h"
 #include "mpICallback.h"
+#include "mpIOprtBinShortcut.h"
 #include "mpError.h"
 #include "mpStack.h"
 #include "mpIfThenElse.h"
@@ -119,6 +120,7 @@ void RPN::Finalize()
 {
 	// Determine the if-then-else jump offsets
 	Stack<int> stIf, stElse;
+	Stack<int> stScBeg;
 	int idx;
 	for (int i = 0; i < static_cast<int>(m_vRPN.size()); ++i)
 	{
@@ -137,6 +139,15 @@ void RPN::Finalize()
 		case  cmENDIF:
 			idx = stElse.pop();
 			static_cast<TokenIfThenElse*>(m_vRPN[idx].Get())->SetOffset(i - idx);
+			break;
+		
+		case cmSHORTCUT_BEGIN:
+			stScBeg.push(i);
+			break;
+		
+		case cmSHORTCUT_END:
+			idx = stScBeg.pop();
+			static_cast<IOprtBinShortcut*>(m_vRPN[idx].Get())->SetOffset(i - idx);
 			break;
 
 		default:
